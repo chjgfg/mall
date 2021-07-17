@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<header th:replace="admin/header::header-fragment"></header>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+  <!-- 引入页面头header-fragment -->
+  <div th:replace="admin/header::header-nav"></div>
+  <!-- 引入工具栏sidebar-fragment -->
+  <div th:replace="admin/sidebar::sidebar-fragment(${path})"></div>
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+      <div class="container-fluid">
+      </div><!-- /.container-fluid -->
+    </div>
+    <!-- Main content -->
+    <div class="content">
+      <div class="container-fluid">
+        <div class="card card-primary card-outline">
+          <div class="card-header">
+            <h3 class="card-title">拼团商品信息编辑</h3>
+          </div>
+          <div class="card-body">
+            <form id="groupForm" onsubmit="return false;">
+
+              <div class="form-group" style="display:flex;">
+                <label class="control-label">请选择分类:&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                <select class="form-control col-sm-3" id="levelOne"
+                        data-placeholder="请选择分类...">
+                  <th:block th:unless="${null == firstLevelCategories}">
+                    <th:block th:each="c : ${firstLevelCategories}">
+                      <option th:value="${c.categoryId}" th:text="${c.categoryName}"
+                              th:selected="${null !=firstLevelCategoryId and firstLevelCategoryId==c.categoryId} ?true:false">
+                        >
+                      </option>
+                    </th:block>
+                  </th:block>
+                </select>&nbsp;
+                <select class="form-control col-sm-3"
+                        id="levelTwo"
+                        data-placeholder="请选择分类...">
+                  <th:block th:unless="${null == secondLevelCategories}">
+                    <th:block th:each="c : ${secondLevelCategories}">
+                      <option th:value="${c.categoryId}" th:text="${c.categoryName}"
+                              th:selected="${null !=secondLevelCategoryId and secondLevelCategoryId==c.categoryId} ?true:false">
+                        >
+                      </option>
+                    </th:block>
+                  </th:block>
+                </select>&nbsp;
+                <select class="form-control col-sm-3"
+                        id="levelThree"
+                        data-placeholder="请选择分类...">
+                  <th:block th:unless="${null == thirdLevelCategories}">
+                    <th:block th:each="c : ${thirdLevelCategories}">
+                      <option th:value="${c.categoryId}" th:text="${c.categoryName}"
+                              th:selected="${null !=thirdLevelCategoryId and thirdLevelCategoryId==c.categoryId} ?true:false">
+                        >
+                      </option>
+                    </th:block>
+                  </th:block>
+                </select>
+              </div>
+
+              <div class="form-group" style="display:flex;">
+                <input type="hidden" id="groupId" name="groupId"
+                       th:value="${group!=null and group.groupId!=null }?${group.groupId}: 0">
+                <input type="text" class="form-control col-sm-12" id="groupName" name="groupName"
+                       placeholder="*请输入拼团商品名称(必填)"
+                       th:value="${group!=null and group.groupName!=null }?${group.groupName}: ''"
+                       required="true">
+              </div>
+              <div class="form-group" style="display:flex;">
+                <input type="text" class="form-control col-sm-12" id="groupIntro" name="groupIntro"
+                       placeholder="*请输入拼团商品简介(100字以内)"
+                       th:value="${group!=null and group.groupIntro!=null }?${group.groupIntro}: ''"
+                       required="true">
+              </div>
+
+              <div class="form-group" style="display:flex;">
+                <input type="number" class="form-control col-sm-6" id="originalPrice"
+                       name="originalPrice"
+                       placeholder="*请输入拼团商品原价格"
+                       th:value="${group!=null and group.originalPrice!=null }?${group.originalPrice}: ''"
+                       required="true">
+                &nbsp;
+                <input type="number" class="form-control col-sm-6" id="groupPrice"
+                       name="groupPrice"
+                       placeholder="*请输入拼团商品拼团价"
+                       th:value="${group!=null and group.groupPrice!=null }?${group.groupPrice}: ''"
+                       required="true">
+
+              </div>
+
+              <div class="form-group" style="display:flex;">
+                <input type="number" class="form-control col-sm-6" id="groupNum"
+                       name="groupNum"
+                       placeholder="*请输入拼团商品成团人数"
+                       th:value="${group!=null and group.groupNum!=null }?${group.groupNum}: '' "
+                       required="true">
+                &nbsp;
+                <input type="number" class="form-control col-sm-6" id="stockNum" name="stockNum"
+                       placeholder="*请输入拼团商品库存数"
+                       th:value="${group!=null and group.stockNum!=null }?${group.stockNum}: ''"
+                       required="true">
+              </div>
+
+              <div class="form-group" style="display:flex;">
+                <input type="text" class="form-control col-sm-12" id="tag" name="tag"
+                       placeholder="*请输入商品小标签"
+                       th:value="${group!=null and group.tag!=null }?${group.tag}: ''"
+                       required="true">
+              </div>
+
+              <div class="form-group">
+                <label class="control-label">上架状态:&nbsp;</label>
+                <input name="groupSellStatus" type="radio" id="groupSellStatusTrue" checked=true
+                       th:checked="${null==group||(null !=group and null !=group.groupSellStatus and group.groupSellStatus==0)} ?true:false"
+                       value="0"/>&nbsp;上架&nbsp;
+                <input name="groupSellStatus" type="radio" id="groupSellStatusFalse" value="1"
+                       th:checked="${null !=group and null !=group.groupSellStatus and group.groupSellStatus==1} ?true:false"/>&nbsp;下架&nbsp;
+              </div>
+
+
+              <div class="form-group">
+                <div class="form-group">
+                  <div class="col-sm-4">
+                    <th:block th:if="${null == group}">
+                      <img id="groupCoverImg" src="/admin/dist/img/img-upload.png"
+                           style="height: 64px;width: 64px;">
+                    </th:block>
+                    <th:block th:unless="${null == group}">
+                      <img id="groupCoverImg" th:src="${group.groupCoverImg}"
+                           style="width:160px ;height: 160px;display:block;">
+                    </th:block>
+                  </div>
+                </div>
+                <br>
+
+                <div class="form-group">
+                  <div class="col-sm-4">
+                    <button class="btn btn-info" style="margin-bottom: 5px;"
+                            id="uploadgroupCoverImg">
+                      <i class="fa fa-picture-o"></i>&nbsp;上传商品主图
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group" id="wangEditor"
+                   th:utext="${group!=null and group.groupDetailContent !=null}?${group.groupDetailContent}: ''">
+              </div>
+              <div class="form-group">
+                <!-- 按钮 -->
+                &nbsp;<button class="btn btn-info float-right" style="margin-left: 5px;"
+                              id="saveButton">保存拼团商品
+              </button>&nbsp;
+                &nbsp;<button class="btn btn-secondary float-right" style="margin-left: 5px;"
+                              id="cancelButton">返回商品列表
+              </button>&nbsp;
+              </div>
+            </form>
+          </div>
+
+        </div>
+      </div><!-- /.container-fluid -->
+    </div>
+  </div>
+  <!-- /.content-wrapper -->
+  <!-- 引入页脚footer-fragment -->
+  <div th:replace="admin/footer::footer-fragment"></div>
+</div>
+<!-- jQuery -->
+<script th:src="@{/admin/plugins/jquery/jquery.min.js}"></script>
+<!-- Bootstrap 4 -->
+<script th:src="@{/admin/plugins/bootstrap/js/bootstrap.bundle.min.js}"></script>
+<!-- AdminLTE App -->
+<script th:src="@{/admin/dist/js/adminlte.min.js}"></script>
+<!-- sweetalert -->
+<script th:src="@{/admin/plugins/sweetalert/sweetalert.min.js}"></script>
+<!-- ajaxupload -->
+<script th:src="@{/admin/plugins/ajaxupload/ajaxupload.js}"></script>
+<!-- wangEditor -->
+<script type="text/javascript" src="//unpkg.com/wangeditor/dist/wangEditor.min.js"></script>
+<!-- kindeditor -->
+<script th:src="@{/admin/dist/js/public.js}"></script>
+<script th:src="@{/admin/dist/js/mall_group_edit.js}"></script>
+</body>
+</html>

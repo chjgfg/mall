@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="mall/header::head-fragment('团购商城-公告','index')">
+  <link rel="stylesheet" href="../static/mall/styles/search.css">
+  <title></title>
+</head>
+<body>
+<header th:replace="mall/header::header-fragment"></header>
+<content id="content">
+  <!--  <nav th:replace="mall/header::nav-fragment"></nav>-->
+
+  <div id="flash">
+    <h2 style="color: red">公告</h2>
+    <div style="width: 1226px;height: 720px;background-color: #f5f5f5;padding-top: 20px;" class="ss"></div>
+    <div class="ssss">
+    </div>
+  </div>
+
+
+</content>
+<div style="margin-top: 500px;"></div>
+<div th:replace="mall/footer::footer-fragment"></div>
+<!-- jQuery -->
+<script th:src="@{/admin/plugins/jquery/jquery.min.js}"></script>
+<!-- Bootstrap 4 -->
+<script th:src="@{/admin/plugins/bootstrap/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/mall/js/swiper.min.js}" type="text/javascript"></script>
+<script th:src="@{/admin/plugins/sweetalert/sweetalert.min.js}"></script>
+<script th:src="@{/mall/js/index.js}" type="text/javascript"></script>
+<script th:src="@{/mall/js/search.js}" type="text/javascript"></script>
+
+<script>
+
+  var totalPage = 0;//总页数
+  var _this = 1;//拿到这个页面值
+  $(function () {
+    getNotice(_this);
+  });
+
+  function getNotice(i) {
+    $(".ss").empty();
+    $.ajax({
+      type: 'POST',//方法类型
+      url: "/mall/notice",
+      data: {"page": i, "limit": 7},
+      success: function (result) {
+        console.log(result);
+        totalPage = result.data.totalPage;
+        var s = result.data.list;
+        s.forEach((item, index) => {
+          var a = $('<div style="color: #0c0c13;font-size: 20px;font-weight: 400;margin-bottom: 8px;">' + item.title + '</div>');
+          var c = $('<div style="margin-left: 1010px;">' + item.createTime + '</div>');
+          var d = $('<div style="margin-left: 20px;padding-top: 15px;" value=' + i + ' class="cdcdc"></div>').append(a).append(c);
+          var e = $('<a href="/notice/' + item.noticeId + '"></a>').append(d);
+          $('<div style="margin-bottom: 20px;height: 83px;width: 1200px;margin-left: 13px;background-color:#fff;cursor: pointer;"></div>').append(e).appendTo(".ss")
+        });
+        dd(i);
+      }
+    });
+  }
+
+
+  function dd(ii) {//分页
+    $(".ssss").empty();
+    console.log("ii =" + ii);
+    var a = $('<li class="first" style="cursor:pointer;font-size: 14px;height: 40px; width: 107px;  border: 1px solid #ddd; line-height: 40px; text-align: center; margin-left: 2%;">< 上一页</li>')
+    // var d = $('<ul style="width: 27%; margin-top: 25px;"></ul>').append(a)
+    var d = $('<ul style="margin-top: 25px;"></ul>').append(a)
+    for (var i = 1; i <= totalPage; i++) {
+      // var c = $('<li class="pointer" value=' + i + ' style="cursor:pointer;font-size: 14px;height: 40px; width: 40px;  border: 1px solid #ddd; line-height: 40px; text-align: center; margin-left: -111% margin-left: -44%;">' + i + '</li>').appendTo(d)
+      var c = $('<li class="pointer" value=' + i + ' style="cursor:pointer;font-size: 14px;height: 40px; width: 40px;  border: 1px solid #ddd; line-height: 40px; text-align: center; ">' + i + '</li>').appendTo(d)
+      if (ii == i && i == 1) {
+        c.css({color: "#1baeae",backgroundColor:"#fff",border: 0}).siblings().css({color: "#000000"});
+        a.css({color: "#ccc"}).attr("disable", "true")
+      } else if (ii == i && i == totalPage) {
+        c.css({color: "#1baeae",backgroundColor:"#fff",border: 0}).siblings().css({color: "#000000"});
+      } else if (ii == i) {
+        c.css({color: "#1baeae",backgroundColor:"#fff",border: 0}).siblings().css({color: "#000000"});
+      }
+    }
+    var e = $('<li class="last" style="cursor:pointer;font-size: 14px;height: 40px; width: 107px;  border: 1px solid #ddd; line-height: 40px; text-align: center; margin-right: 67%;">下一页 ></li>').appendTo(d)
+
+    if (ii == totalPage) {
+      e.css({color: "#ccc"}).attr("disable", "true");
+    }
+    d.appendTo(".ssss");
+  }
+
+  //点击哪个
+  $(document).on('click', ".pointer", function () {
+    _this = $(this).text();//获取值
+    if ($(this).prop('checked', true)) {
+      console.log("_this =  " + _this);
+      getNotice(_this);
+      $(this).css({color: "#1baeae",backgroundColor:"#fff",border: 0}).siblings().css({color: "#000000"});
+    }
+    goTo()
+  });
+
+  /**
+   * 上一页
+   */
+  $(document).on('click', ".first", function () {
+    if (_this > 1) {
+      _this--;
+      console.log(_this);
+      getNotice(_this);
+      $("li[value='" + _this + "']").css({color: "#1baeae",backgroundColor:"#fff",border: 0}).siblings().css({color: "#000000"});
+      if (_this <= 1) {
+        $(this).css({color: "#ccc"}).attr("disable", "true");
+      }
+    }
+    goTo()
+  });
+
+  /**
+   * 下一页
+   */
+  $(document).on('click', ".last", function () {
+    if (_this < totalPage) {
+      _this++;
+      console.log(_this);
+      getNotice(_this);
+      $("li[value='" + _this + "']").css({color: "#1baeae",backgroundColor:"#fff",border: 0}).siblings().css({color: "#000000"});
+      if (_this >= totalPage) {
+        $(this).css({color: "#ccc"}).attr("disable", "true");
+      }
+    }
+    goTo()
+  });
+
+  function goTo() {
+    $('body,html').animate({
+      scrollTop: 0
+    }, 500);
+  }
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.group.mall.dao.GroupMapper">
+    <resultMap id="BaseResultMap" type="org.group.mall.entity.MallGroup">
+        <id column="group_id" jdbcType="BIGINT" property="groupId"/>
+        <result column="group_name" jdbcType="VARCHAR" property="groupName"/>
+        <result column="group_intro" jdbcType="VARCHAR" property="groupIntro"/>
+        <result column="group_category_id" jdbcType="BIGINT" property="groupCategoryId"/>
+        <result column="group_cover_img" jdbcType="VARCHAR" property="groupCoverImg"/>
+        <result column="original_price" jdbcType="INTEGER" property="originalPrice"/>
+        <result column="stock_num" jdbcType="INTEGER" property="stockNum"/>
+        <result column="tag" jdbcType="VARCHAR" property="tag"/>
+        <result column="group_num" jdbcType="INTEGER" property="groupNum"/>
+        <result column="group_price" jdbcType="INTEGER" property="groupPrice"/>
+        <result column="group_sell_status" jdbcType="TINYINT" property="groupSellStatus"/>
+    </resultMap>
+    <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="org.group.mall.entity.MallGroup">
+        <result column="group_detail_content" jdbcType="LONGVARCHAR" property="groupDetailContent"/>
+    </resultMap>
+
+  <sql id="Base_Column_List">
+    group_id,group_name,group_intro,group_category_id,group_cover_img,original_price,stock_num,tag,group_sell_status,group_num,group_price
+  </sql>
+
+    <sql id="Blob_Column_List">
+    group_detail_content
+  </sql>
+
+
+    <select id="findNewBeeMallGRoupList" parameterType="Map" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from tb_newbee_mall_group_work
+        <where>
+            <if test="groupName!=null and groupName!=''">
+                and group_name like CONCAT('%','#{groupName}','%')
+            </if>
+            <if test="status!=null and status!='' and status !='3'" >
+                and group_sell_status = #{status}
+            </if>
+        </where>
+        order by group_id desc
+        <if test="start!=null and limit!=null">
+            limit #{start},#{limit}
+        </if>
+    </select>
+
+    <select id="getTotalNewBeeMallGroup" parameterType="Map" resultType="int">
+        select count(*) from tb_newbee_mall_group_work
+        <where>
+            <if test="groupName!=null and groupName!=''">
+                and group_name like CONCAT('%','#{groupName}','%')
+            </if>
+            <if test="status!=null and status!=''" >
+                and group_sell_status = #{status}
+            </if>
+        </where>
+    </select>
+
+
+    <insert id="insertSelective" parameterType="org.group.mall.entity.MallGroup">
+        insert into tb_newbee_mall_group_work
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="groupId != null">
+                group_id,
+            </if>
+            <if test="groupName != null">
+                group_name,
+            </if>
+            <if test="groupIntro != null">
+                group_intro,
+            </if>
+            <if test="groupCategoryId != null">
+                group_category_id,
+            </if>
+            <if test="groupCoverImg != null">
+                group_cover_img,
+            </if>
+
+            <if test="originalPrice != null">
+                original_price,
+            </if>
+
+            <if test="stockNum != null">
+                stock_num,
+            </if>
+            <if test="tag != null">
+                tag,
+            </if>
+            <if test="groupSellStatus != null">
+                group_sell_status,
+            </if>
+
+            <if test="groupDetailContent != null">
+                group_detail_content,
+            </if>
+
+            <if test="groupNum != null">
+                group_num,
+            </if>
+            <if test="groupPrice != null">
+                group_price,
+            </if>
+
+
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="groupId != null">
+                #{groupId,jdbcType=BIGINT},
+            </if>
+            <if test="groupName != null">
+                #{groupName,jdbcType=VARCHAR},
+            </if>
+            <if test="groupIntro != null">
+                #{groupIntro,jdbcType=VARCHAR},
+            </if>
+            <if test="groupCategoryId != null">
+                #{groupCategoryId,jdbcType=BIGINT},
+            </if>
+            <if test="groupCoverImg != null">
+                #{groupCoverImg,jdbcType=VARCHAR},
+            </if>
+
+            <if test="originalPrice != null">
+                #{originalPrice,jdbcType=INTEGER},
+            </if>
+
+            <if test="stockNum != null">
+                #{stockNum,jdbcType=INTEGER},
+            </if>
+            <if test="tag != null">
+                #{tag,jdbcType=VARCHAR},
+            </if>
+            <if test="groupSellStatus != null">
+                #{groupSellStatus,jdbcType=TINYINT},
+            </if>
+
+            <if test="groupDetailContent != null">
+                #{groupDetailContent,jdbcType=LONGVARCHAR},
+            </if>
+
+            <if test="groupNum != null">
+                #{groupNum,jdbcType=INTEGER},
+            </if>
+            <if test="groupPrice != null">
+                #{groupPrice,jdbcType=INTEGER}
+            </if>
+        </trim>
+    </insert>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="ResultMapWithBLOBs">
+        select
+        <include refid="Base_Column_List"/>
+        ,
+        <include refid="Blob_Column_List"/>
+        from tb_newbee_mall_group_work
+        where group_id = #{id,jdbcType=BIGINT}
+    </select>
+
+
+    <update id="batchUpdateSellStatus">
+        update tb_newbee_mall_group_work
+        set group_sell_status=#{sellStatus} where group_id in
+        <foreach item="id" collection="orderIds" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="updateByPrimaryKeyWithBLOBs" parameterType="org.group.mall.entity.MallGroup">
+    update tb_newbee_mall_group_work
+    set group_name = #{groupName,jdbcType=VARCHAR},
+      group_intro = #{groupIntro,jdbcType=VARCHAR},
+      group_cover_img = #{groupCoverImg,jdbcType=VARCHAR},
+      original_price = #{originalPrice,jdbcType=INTEGER},
+      stock_num = #{stockNum,jdbcType=INTEGER},
+      tag = #{tag,jdbcType=VARCHAR},
+      group_sell_status = #{groupSellStatus,jdbcType=TINYINT},
+      group_detail_content = #{groupDetailContent,jdbcType=LONGVARCHAR},
+      group_num = #{groupNum,jdbcType=INTEGER},
+      group_price = #{groupPrice,jdbcType=INTEGER}
+    where group_id = #{groupId,jdbcType=BIGINT}
+  </update>
+
+    <update id="updateByPrimaryKey" parameterType="org.group.mall.entity.MallGroup">
+    update tb_newbee_mall_group_work
+    set group_name = #{groupName,jdbcType=VARCHAR},
+      group_intro = #{groupIntro,jdbcType=VARCHAR},
+      group_cover_img = #{groupCoverImg,jdbcType=VARCHAR},
+      original_price = #{originalPrice,jdbcType=INTEGER},
+      stock_num = #{stockNum,jdbcType=INTEGER},
+      tag = #{tag,jdbcType=VARCHAR},
+      group_sell_status = #{groupSellStatus,jdbcType=TINYINT},
+      group_num = #{groupNum,jdbcType=INTEGER},
+      group_price = #{groupPrice,jdbcType=INTEGER}
+    where group_id = #{groupId,jdbcType=BIGINT}
+  </update>
+
+
+    <select id="selectCount" parameterType="java.lang.Long" resultType="java.lang.Integer">
+       select count(*) from  tb_newbee_mall_group_work where group_id = #{id,jdbcType=BIGINT}
+    </select>
+
+
+
+
+
+
+</mapper>

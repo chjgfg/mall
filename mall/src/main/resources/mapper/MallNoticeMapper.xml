@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.group.mall.dao.MallNoticeMapper">
+    <resultMap id="BaseResultMap" type="org.group.mall.entity.Notice">
+        <id column="notice_id" jdbcType="BIGINT" property="noticeId"/>
+        <result column="title" jdbcType="VARCHAR" property="title"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="status" jdbcType="VARCHAR" property="status"/>
+    </resultMap>
+    <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="org.group.mall.entity.Notice">
+        <result column="context" jdbcType="LONGVARCHAR" property="context"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        notice_id,title,create_time,update_time,status
+  </sql>
+    <sql id="Blob_Column_List">
+        notice_id,title,create_time,update_time,status,context
+  </sql>
+
+    <select id="findNewBeeMallNoticeList" parameterType="Map" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from tb_newbee_mall_notice
+        <where>
+            <if test="title!=null and title!=''">
+                and title like CONCAT('%','#{title}','%')
+            </if>
+            <if test="status!=null and status!=''">
+                and status = #{status}
+            </if>
+        </where>
+        order by notice_id desc
+        <if test="start!=null and limit!=null">
+            limit #{start},#{limit}
+        </if>
+    </select>
+
+  <select id="findNoticeList" parameterType="Map" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from tb_newbee_mall_notice
+    <where>
+      <if test="title!=null and title!=''">
+        and title like CONCAT('%','#{title}','%')
+      </if>
+      <if test="status!=null and status!=''">
+        and status = #{status}
+      </if>
+    </where>
+    order by notice_id desc
+    <if test="start!=null and limit!=null">
+      limit #{start},#{limit}
+    </if>
+  </select>
+
+
+    <select id="getTotalNewBeeMallNotice" parameterType="Map" resultType="int">
+        select count(*) from tb_newbee_mall_notice
+        <where>
+            <if test="title!=null and title!=''">
+                and title like CONCAT('%','#{title}','%')
+            </if>
+            <if test="status!=null and status!=''">
+                and status = #{status}
+            </if>
+        </where>
+    </select>
+
+  <select id="getTotalNotice" parameterType="Map" resultType="int">
+    select count(*) from tb_newbee_mall_notice
+    <where>
+      <if test="title!=null and title!=''">
+        and title like CONCAT('%','#{title}','%')
+      </if>
+      <if test="status!=null and status!=''">
+        and status = #{status}
+      </if>
+    </where>
+  </select>
+
+
+  <select id="selectByPrimaryKey"  parameterType="java.lang.Long" resultMap="ResultMapWithBLOBs">
+        select
+        <include refid="Blob_Column_List"/>
+        from tb_newbee_mall_notice
+        where notice_id = #{id,jdbcType=BIGINT}
+    </select>
+
+
+    <insert id="insertSelective" parameterType="org.group.mall.entity.Notice">
+        insert into tb_newbee_mall_notice
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="context != null">
+                context,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="updateTime != null">
+                update_time,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+
+            <if test="title != null">
+                title,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="context != null">
+                #{context,jdbcType=LONGVARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="status != null">
+                #{status,jdbcType=INTEGER},
+            </if>
+            <if test="title != null">
+                #{title,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="batchUpdateSellStatus">
+        update tb_newbee_mall_notice
+        set status=#{sellStatus},update_time=now() where notice_id in
+        <foreach item="id" collection="orderIds" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="updateByPrimaryKeyWithBLOBs" parameterType="org.group.mall.entity.Notice">
+    update tb_newbee_mall_notice
+    set
+      context = #{context,jdbcType=LONGVARCHAR},
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      title = #{title,jdbcType=VARCHAR},
+      status = #{status,jdbcType=INTEGER}
+    where notice_id = #{noticeId,jdbcType=BIGINT}
+  </update>
+
+    <update id="updateByPrimaryKey" parameterType="org.group.mall.entity.Notice">
+    update tb_newbee_mall_notice
+    set
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      title = #{title,jdbcType=VARCHAR},
+      status = #{status,jdbcType=INTEGER}
+    where notice_id = #{noticeId,jdbcType=BIGINT}
+  </update>
+
+</mapper>

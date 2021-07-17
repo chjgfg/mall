@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="mall/header::head-fragment('团购商城-商品详情','detail')">
+</head>
+<body>
+<header th:replace="mall/header::header-fragment"></header>
+
+<div id="detail">
+  <!-- nav -->
+  <!--  <nav th:replace="mall/header::nav-fragment"></nav>-->
+
+  <div class="dc">
+    <div class="content w">
+      <div class="title fl">拼团商品详情</div>
+      <div class="clear"></div>
+    </div>
+  </div>
+
+
+  <div class="intro mt20 w clearfix userId" th:rel="${session.user.getUserId()}"
+       th:align="${session.user.getLoginName()}">
+    <div class="left fl" style="position: relative;">
+      <div class="swiper-container fl">
+        <!--        <img src="https://img14.360buyimg.com/n0/jfs/t1/31766/7/12683/132468/5cb81dfcE94aa4cf8/d8dddd6c0e63db89.jpg">-->
+        <img th:src="@{${goods.group_cover_img}}">
+      </div>
+    </div>
+    <div class="right fr">
+      <div class="h3 ml20 mt20  ccscscs " th:align="${goods.group_id}" th:text="${goods.group_name}">Mall</div>
+      <div class="sub_title mr40 ml20 mt10" th:text="${goods.group_intro}">Mall</div>
+      <div class="order">
+        <div class="settime" style="color: red"></div>
+        <input class="car button-group" type="button" th:alt="${goods.group_id}" value="开始拼团"/>
+      </div>
+      <div class="item_price mr40 ml20 mt10">
+        售价:
+        <!--        <th:block th:text="${goods.group_price}+'.00 元'"></th:block>-->
+        <th:block th:text="${goods.original_price}+'.00 元'"></th:block>
+        <!--        <del style="display: block">-->
+        <!--          原价:-->
+        <!--          <th:block th:text="${goods.original_price}+'.00 元'"></th:block>-->
+        <!--        </del>-->
+      </div>
+
+
+      <div style="display: flex;flex-direction: row;width: 100%;">
+
+        <div class="tb-extra ml20" id="J_tbExtra" style="width: 70%">
+          <dl>
+            <dt>承诺</dt>
+            <dd><a class="J_Cont" title="满足7天无理由退换货申请的前提下，包邮商品需要买家承担退货邮费，非包邮商品需要买家承担发货和退货邮费。" href="#"
+                   target="_blank"><img th:src="@{/mall/image/7d.jpg}">7天无理由</a></dd>
+          </dl>
+          <dl>
+            <dt>支付</dt>
+            <dd><a href="##" target="_blank"><img th:src="@{/mall/image/hua.png}">蚂蚁花呗</a><a href="##" target="_blank">
+              <img th:src="@{/mall/image/card.png}">信用卡支付</a><a href="##" target="_blank">
+              <img th:src="@{/mall/image/ji.png}">集分宝</a>
+            </dd>
+          </dl>
+          <dl>
+            <dt>支持</dt>
+            <dd>折旧变现，买新更省钱。<a style="float:none;text-decoration: underline;" href="##">详情</a></dd>
+          </dl>
+        </div>
+        <div class="tb-extra ml20 groups-user" id="J_tbExtra" style="">
+        </div>
+      </div>
+    </div>
+    <div class="clear"></div>
+
+  </div>
+  <!-- 这里使用的是 th:utext 标签，用 th:text 不会解析 html，用 th:utext 会解析 html -->
+  <div class="goods mt20 w clearfix" th:utext="${goods.group_detail_content}">
+  </div>
+</div>
+
+<div th:replace="mall/footer::footer-fragment"></div>
+
+<!-- jQuery -->
+<script th:src="@{/admin/plugins/jquery/jquery.min.js}"></script>
+<script th:src="@{/admin/plugins/sweetalert/sweetalert.min.js}"></script>
+<script th:src="@{/mall/js/search.js}" type="text/javascript"></script>
+<script type="text/javascript">
+
+  let groupWorkId = $(".button-group").attr("alt");
+  let userId = $(".userId").attr("rel");
+  let loginName = $(".userId").attr("align");
+
+  let group_work_id = $(".buttonddd").attr("alt");
+  let group_id = $(".buttonddd").attr("align");
+
+
+  function getLocal(groupWorkId, userId) {
+    let parse = JSON.parse(decodeURIComponent(localStorage.getItem(groupWorkId + "-" + userId)));
+    if (parse === null) {
+      return "";
+    } else {
+      return [parse.groupWorkId, parse.groupId, parse.userId, parse.endTime];
+    }
+  }
+
+  function returnGroupWorkId(groupWorkId, userId) {
+    let parse = JSON.parse(decodeURIComponent(localStorage.getItem(groupWorkId + "-" + userId)));
+    // console.log(parse);
+    if (parse === null) {
+      return "";
+    } else {
+      return parse.groupWorkId;
+    }
+  }
+
+  $(function () {
+    if (groupWorkId === returnGroupWorkId(groupWorkId, userId)) {
+      if (groupWorkId === returnGroupWorkId(groupWorkId, loginName)) {
+        $(".button-group").val("结束组队");
+        $(".button-group").attr("align", getLocal(groupWorkId, loginName)[1]);
+        $(".settime").attr("endTime", getLocal(groupWorkId, loginName)[3]);
+        updateEndTime();
+      } else {
+        $(".button-group").val("结束拼团");
+        $(".settime").attr("endTime", getLocal(groupWorkId, userId)[3]);
+        updateEndTime();
+      }
+    } else {
+      if (groupWorkId === returnGroupWorkId(groupWorkId, loginName)) {
+        $(".button-group").val("结束组队");
+        $(".button-group").attr("align", getLocal(groupWorkId, loginName)[1]);
+        $(".settime").attr("endTime", getLocal(groupWorkId, loginName)[3]);
+        updateEndTime();
+      } else {
+        $(".button-group").val("结束拼团");
+        $(".settime").attr("endTime", getLocal(groupWorkId, userId)[3]);
+        updateEndTime();
+      }
+    }
+
+    getGroups(groupWorkId);
+    // someSeconds();
+
+    $(".button-group").click(function () {
+      if ($(this).val() === "开始拼团") {
+        $(this).val("结束拼团");
+        $.post('/saveToRedis/' + groupWorkId, function (e) {
+          // console.log(e);
+          const obj = {
+            "groupWorkId": groupWorkId,
+            "groupId": e.data.groupId,
+            "userId": userId,
+            "endTime": e.data.endTime
+          };
+          localStorage.setItem(groupWorkId + "-" + userId, encodeURIComponent(JSON.stringify(obj)));
+          getGroups(groupWorkId);
+          $(".button-group").attr("alt", getLocal(groupWorkId, userId)[0]).attr("align", getLocal(groupWorkId, userId)[1]);
+          swal({title: "加团成功", text: "开始拼团中", icon: "success", buttons: true, dangerMode: true,}).then((res) => {
+            getGroups(groupWorkId);
+          });
+          $(".settime").attr("endTime", getLocal(groupWorkId, userId)[3]);
+          updateEndTime();
+        })
+      } else if ($(this).val() === "结束拼团") {
+        $(this).val("开始拼团");
+        $(".button-group").attr("alt", getLocal(groupWorkId, userId)[0]).attr("align", getLocal(groupWorkId, userId)[1]);
+        $.post('/removeFromGroup/' + $(this).attr("alt") + "/" + $(this).attr("align"), function (e) {
+          // console.log(e);
+          if (e === "remove over" || e === "remove") {
+            // getGroups(groupWorkId);
+            swal({title: "退团成功", text: "已结束拼团", icon: "success", buttons: true, dangerMode: true,}).then((res) => {
+              getGroups(groupWorkId);
+            });
+            localStorage.removeItem(groupWorkId + "-" + userId);
+          }
+          $(".settime").remove();
+        })
+      } else if ($(this).val() === "结束组队") {
+        $(this).val("开始拼团");
+        $(".settime").attr("endTime", "");
+        updateEndTime();
+        $.post('/removeFromGroup/' + $(this).attr("alt") + "/" + $(this).attr("align"), function (e) {
+          // console.log(e);
+          if (e === "remove over" || e === "remove") {
+            swal({title: "退队成功", text: "已结束组队", icon: "success", buttons: true, dangerMode: true,}).then((res) => {
+              getGroups(groupWorkId);
+            });
+            localStorage.removeItem(groupWorkId + "-" + loginName);
+          } else if (e === "no exits") {
+            swal({title: "不在该队伍中", text: "已结束组队", icon: "error", buttons: true, dangerMode: true,}).then((res) => {
+              getGroups(groupWorkId);
+            });
+          } else {
+            swal({title: "", text: "未知错误", icon: "error", buttons: true, dangerMode: true,}).then((res) => {
+              getGroups(groupWorkId);
+            });
+          }
+        });
+        $(".settime").remove();
+      }
+    });
+  });
+
+  /**
+   *开始组队
+   */
+  $(document).on("click", ".buttonddd", function (e) {
+    group_work_id = $(this).attr("alt");
+    group_id = $(this).attr("align");
+    const end_time = $(this).attr("endtime");
+    // console.log(group_work_id + " ===" + group_id);
+    $.post('/joinGroup/' + group_work_id + "/" + group_id, function (e) {
+      // console.log(e);
+      if (e == "exits") {
+        swal({title: "组队成功", text: "已在该队伍中", icon: "success", buttons: true, dangerMode: true,}).then((res) => {
+          getGroups(groupWorkId);
+          $(".settime").attr("endTime", getLocal(groupWorkId, loginName)[3]);
+        });
+      } else if (e === "full") {
+        swal({title: "组队失败", text: "该队伍已满", icon: "error", buttons: true, dangerMode: true,}).then((res) => {
+          getGroups(groupWorkId);
+          $(".settime").remove();
+        });
+      } else {
+        $(".button-group").val("结束组队").attr("alt", group_work_id).attr("align", group_id);
+        const obj = {"groupWorkId": group_work_id, "groupId": group_id, "userId": userId, "endTime": end_time};
+        localStorage.setItem(groupWorkId + "-" + loginName, encodeURIComponent(JSON.stringify(obj)));
+        $(".settime").attr("endTime", getLocal(groupWorkId, loginName)[3]);
+        swal({title: "组队成功", text: "已成功组队", icon: "success", buttons: true, dangerMode: true,}).then((res) => {
+          getGroups(groupWorkId);
+        });
+      }
+      updateEndTime();
+    })
+  });
+
+  /**
+   * 时间到了
+   */
+  function over(one, two) {
+    if (one === undefined || two === undefined) {
+      return;
+    }
+    $.post("/groupWorkFail/" + one + "/" + two, function (e) {
+      console.log(e);
+      if (e === "delete ok") {
+        swal({title: "组队失败", text: "人数太少,未成功加入购物车", icon: "error", buttons: true, dangerMode: true}).then((res) => {
+          getGroups(groupWorkId);
+          setTimeout(function () {
+            window.location.reload();
+          }, 2000);
+        });
+      } else if (e === "insert ok") {
+        swal({title: "拼团成功", text: "已成功加入购物车", icon: "success", buttons: true, dangerMode: true,}).then((res) => {
+          getGroups(groupWorkId);
+          setTimeout(function () {
+            window.location.reload();
+          }, 2000);
+        });
+      } else if (e === "no") {
+        swal({title: "组队失败", text: "不在该队伍中", icon: "error", buttons: true, dangerMode: true,}).then((res) => {
+          getGroups(groupWorkId);
+          setTimeout(function () {
+            window.location.reload();
+          }, 2000);
+        });
+      }
+      $(".settime").remove();
+    })
+  }
+
+  /**
+   * 定时器
+   */
+  // function someSeconds() {
+  //   var s1 = "";
+  //   var s2 = "";
+  //   if ($(".button-group").val() === "结束拼团") {
+  //     s1 = getLocal(groupWorkId, userId)[0];
+  //     s2 = getLocal(groupWorkId, userId)[1]
+  //   } else if ($(".button-group").val() === "结束组队") {
+  //     s1 = getLocal(groupWorkId, loginName)[0];
+  //     s2 = getLocal(groupWorkId, loginName)[1]
+  //   }
+  //   // console.log("s1 = " + s1, "s2 = " + s2);
+  //   if (s1 !== "" || s2 !== "") {
+  //     $.post("/someSeconds/" + s1 + "/" + s2, function (e) {
+  //       if (e === "good") {
+  //         over(s1, s2);
+  //         $(".settime").remove();
+  //       }
+  //     });
+  //   }
+  //   setTimeout("someSeconds()", 3000);
+  // }
+
+
+  /**
+   * groupWorkId 获取队伍
+   */
+  function getGroups(number) {
+    $(".groups-user").empty();
+    $.post("/findGroup/" + number, function (e) {
+      // console.log(e);
+      if (e.data.length !== 0 || e.data.length !== null) {
+        const items = e.data;
+        items.forEach((item, index) => {
+          // console.log(item);
+          if (item === null) {
+            return;
+          }
+          $.post("/selectByPrimaryKey/" + item.groupWorkOrder[0].userId, function (e) {
+            let s = e.nickName.substring(0, 3) + "****" + e.nickName.substring(8, e.nickName.length);
+            var a = $('<dt style="width: 181px;" >' + s + '正在拼团</dt>');
+            var b = $('<button  endtime="' + item.endTime + '" alt="' + item.groupWorkOrder[0].groupId + '" align="' + item.groupId + '" style="background: #1baeae;border: none;cursor: pointer;font-size: 10px;" class="buttonddd">加入</button>');
+            var c = $('<dd class="dd"></dd>').append(b);
+            $('<dl></dl>').append(a).append(c).appendTo(".groups-user");
+          });
+        })
+      } else {
+        $(".groups-user").empty();
+      }
+    })
+    setTimeout('getGroups(groupWorkId)', 30000);
+  }
+
+
+  //倒计时函数
+  function updateEndTime() {
+    var date = new Date();
+    var time = date.getTime(); //当前时间距1970年1月1日之间的毫秒数
+    // $(".settime").each(function (i) {
+    var endDate = $(".settime").attr("endTime"); //结束时间字符串
+    // console.log(endDate);
+    var t = timesss(endDate);
+    //转换为时间日期类型
+    var endDate1 = eval('new Date(' + t.replace(/\d+(?=-[^-]+$)/, function (a) {
+      return parseInt(a, 10) - 1;
+    }).match(/\d+/g) + ')');
+    var endTime = endDate1.getTime(); //结束时间毫秒数
+    var lag = (endTime - time) / 1000; //当前时间和结束时间之间的秒数
+    // console.log(lag);
+    if (lag > 0) {
+      var second = Math.floor(lag % 60);
+      var minite = Math.floor((lag / 60) % 60);
+      var hour = Math.floor((lag / 3600) % 24);
+      var day = Math.floor((lag / 3600) / 24);
+      $(".settime").html("团购倒计时：" + day + "天" + hour + "小时" + minite + "分" + second + "秒");
+    } else if (lag <= 0) {
+      if ($(".car").val() === "结束拼团") {
+        over(getLocal(groupWorkId, userId)[0], getLocal(groupWorkId, userId)[1])
+      } else if ($(".car").val() === "结束组队") {
+        over(getLocal(groupWorkId, loginName)[0], getLocal(groupWorkId, loginName)[1])
+      }
+      $(".settime").attr("endTime", "").val("");
+      $(".car").val("开始拼团");
+      localStorage.removeItem(groupWorkId + "-" + userId);
+      localStorage.removeItem(groupWorkId + "-" + loginName);
+      return;
+    }
+    // });
+    setTimeout("updateEndTime()", 1000);
+  }
+
+  //处理日期类型24小时格式
+  function fullNum(obj) {
+    if (Number(obj) < 10) {
+      return '0' + obj;
+    } else {
+      return obj;
+    }
+  }
+
+  function timesss(time) {
+    var mytime = new Date(time);  //获取到后台返回的日期字段的时间戳(java是13位)
+    return mytime.getFullYear() + '-' + fullNum(Number(mytime.getMonth()) + 1) + '-' + fullNum(mytime.getDate()) + ' '
+      + fullNum(mytime.getHours()) + ":" + fullNum(mytime.getMinutes()) + ":" + fullNum(mytime.getSeconds());
+  }
+
+
+</script>
+
+
+</body>
+</html>

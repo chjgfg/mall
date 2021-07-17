@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="mall/header::head-fragment('团购商城-首页','index')">
+  <link rel="stylesheet" href="../static/mall/styles/search.css">
+  <title></title>
+  <style>
+    #content #recommend ul li:hover {
+      box-shadow: 0 0 0 #ccc !important;
+    }
+  </style>
+</head>
+<body>
+<header th:replace="mall/header::header-fragment"></header>
+<content id="content">
+  <nav id="nav" th:fragment="nav-fragment">
+    <div class="banner_x center">
+      <a th:href="@{/index}" class="logo"><h1>新蜂商城</h1></a>
+      <div class="fr">
+        <div class="search">
+          <input class="text" type="text" id="keyword" autocomplete="off">
+          <div class="search_hot"></div>
+        </div>
+        <div class="button iconfont icon-search"></div>
+      </div>
+    </div>
+  </nav>
+
+  <div id="recommend">
+    <div style="width: 1226px;height: 720px;background-color: #f5f5f5;padding-top: 20px;" class="ss">
+      <ul class="uuuu" style="display: -webkit-box;justify-content: start;"></ul>
+    </div>
+    <div class="ssss" style="height: 0px;width: 50%;justify-content: revert !important;">
+    </div>
+  </div>
+
+
+</content>
+<div style="margin-top: 90px;"></div>
+<div th:replace="mall/footer::footer-fragment"></div>
+<!-- jQuery -->
+<script th:src="@{/admin/plugins/jquery/jquery.min.js}"></script>
+<!-- Bootstrap 4 -->
+<script th:src="@{/admin/plugins/bootstrap/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/mall/js/swiper.min.js}" type="text/javascript"></script>
+<script th:src="@{/admin/plugins/sweetalert/sweetalert.min.js}"></script>
+<script th:src="@{/mall/js/index.js}" type="text/javascript"></script>
+<!--<script th:src="@{/mall/js/search.js}" type="text/javascript"></script>-->
+
+<script>
+
+  var number = 10;
+  var _this = 1;//拿到这个页面值
+  var totalPage = 0;//总页数
+  $(function () {
+    getTen(number);
+
+    $('#keyword').keypress(function (e) {
+      const key = e.which; //点击回车
+      if (key === 13) {
+        getSearchgoods($(this).val(), 1);
+      }
+    });
+  });
+
+  //默认查找10个
+  function getTen(number) {
+    $.get("/findSome/" + number, function (data) {
+      $(".uuuu").empty();
+      data.forEach((item, index) => {
+        setOn(item);
+      })
+    }, "json")
+    $(".ssss").css({"display": "none"});
+  }
+
+  //根据条件查找10个
+  function getSearchgoods(text, page) {
+    $.get('/searchGroup?keyword=' + text + "&page=" + page + "&limit=10", function (e) {
+      $(".uuuu").empty();
+      console.log(e);
+      if (e !== "") {
+        const s = e.list;
+        totalPage = e.totalPage;
+        s.forEach((item, index) => {
+          setOn(item)
+        });
+        $(".ssss").empty();
+        if (e.totalPage > 1) {
+          $(".ssss").css({"display": "block"});
+          dd(_this)
+        }
+      }
+    }, "json")
+  }
+
+  /**
+   * 点击查询按钮
+   */
+  $(".icon-search").click(function () {
+    const text = $(".text").val().trim();
+    if (text.length === 0) {
+      swal("输入为空,重新输入!", {
+        icon: "",
+      });
+      getTen(10);
+      return;
+    }
+    getSearchgoods(text, 1);
+  });
+
+  /**
+   * 拼页面
+   * @param item
+   */
+  function setOn(item) {
+    var a = $('<div class="info discount">热销</div>');
+    var b = $('<img src="' + item.group_cover_img + '" alt=""/>');
+    console.log(item.group_name);
+    console.log(item.group_name.length);
+    if (item.group_name.length > 20) {
+      item.group_name = item.group_name.substring(0, 17) + "...";
+    }
+    var c = $('<p class="name">' + item.group_name + ' </p>');
+    // var d = $('<p class="price">￥' + item.group_price + '</p>');
+    var d = $('<p class="price">￥' + item.original_price + '</p>');
+    var j = $('<p class="price" style="text-decoration:line-through">￥' + item.original_price + '</p>');
+    var e = $('<p class="counter">猜你喜欢</p>');
+    var f = $('<p>心仪精选</p>');
+    var g = $('<p>好物也可以不贵</p>');
+    var h = $('<div class="comment"></div>').append(f).append(g);
+    var i = $('<a href="/groupWork/detail/' + item.group_id + '"></a>').append(a).append(b).append(c).append(d).append(e).append(h); //.append(j)
+    $('<li style="margin-top: 20px;display: inline-block;"></li>').append(i).appendTo(".uuuu");
+  }
+
+  //分页
+  function dd(ii) {
+    var a = $('<li class="first" style="width: 109px; height: 36px; line-height: 36px; text-align: center; border: 1px solid #ddd; font-size: 14px; cursor: pointer;">< 上一页 </li>');
+    var d = $('<ul style="margin-top: 25px;height: 36px; justify-content: revert !important;"></ul>').append(a);
+    for (var i = 1; i <= totalPage; i++) {
+      var c = $('<li class="pointer" value=' + i + '  style="width: 36px; height: 36px; line-height: 36px; text-align: center; border: 1px solid #ddd; font-size: 14px; cursor: pointer;">' + i + '</li>').appendTo(d);
+      if (ii == i && i == 1) {
+        c.css({color: "#1baeae", backgroundColor: "#fff", border: 0}).siblings().css({color: "#000000"});
+        a.css({color: "#ccc"}).attr("disable", "true")
+      } else if (ii == i && i == totalPage) {
+        c.css({color: "#1baeae", backgroundColor: "#fff", border: 0}).siblings().css({color: "#000000"});
+      } else if (ii == i) {
+        c.css({color: "#1baeae", backgroundColor: "#fff", border: 0}).siblings().css({color: "#000000"});
+      }
+    }
+    var e = $('<li class="last"  style="width: 109px; height: 36px;  line-height: 36px; text-align: center; border: 1px solid #ddd; font-size: 14px; cursor: pointer;">下一页 ></li>').appendTo(d);
+    if (ii == totalPage) {
+      e.css({color: "#ccc", backgroundColor: "#fff"}).attr("disable", "true");
+    }
+    d.appendTo(".ssss");
+  }
+
+
+  $(document).on('click', ".pointer", function () {
+    _this = $(this).text();//获取值
+    if ($(this).prop('checked', true)) {
+      console.log(_this);
+      getSearchgoods($(".text").val().trim(), _this);
+      $(this).css({color: "#1baeae", backgroundColor: "#fff", border: 0}).siblings().css({
+        color: "#000000",
+        backgroundColor: "#8080801a"
+      });
+      goTo();
+    }
+  });
+
+  //上一页
+  $(document).on('click', ".first", function () {
+    if (_this > 1) {
+      _this--;
+      console.log(_this);
+      getSearchgoods($(".text").val().trim(), _this);
+      $("li[value='" + _this + "']").css({
+        color: "#1baeae",
+        backgroundColor: "#fff",
+        border: 0
+      }).siblings().css({color: "#000000", backgroundColor: "#8080801a"});
+      if (_this <= 1) {
+        $(this).css({color: "#ccc"}).attr("disable", "true");
+      }
+    }
+    goTo();
+  });
+
+  //下一页
+  $(document).on('click', ".last", function () {
+    if (_this < totalPage) {
+      _this++;
+      console.log(_this);
+      getSearchgoods($(".text").val().trim(), _this);
+      $("li[value='" + _this + "']").css({
+        color: "#1baeae",
+        backgroundColor: "#fff",
+        border: 0
+      }).siblings().css({color: "#000000", backgroundColor: "#8080801a"});
+      if (_this >= totalPage) {
+        $(this).css({color: "#ccc"}).attr("disable", "true");
+      }
+    }
+    goTo();
+  });
+
+  //回到顶部
+  function goTo() {
+    $('body,html').animate({
+      scrollTop: 0
+    }, 500);
+  }
+
+</script>
+
+</body>
+</html>
